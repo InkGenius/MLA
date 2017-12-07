@@ -199,14 +199,32 @@ def read_data(file_name):
     return data, ref_clusters
 
 
+########################################################################
+def read_data_iris(file_name):
+    """ read the data from filename as numpy array """
+    with open(file_name) as f:
+        data = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=(0, 1, 2, 3))
+
+    with open(file_name) as f:
+        ref_classes = np.loadtxt(f, delimiter=",", dtype="str", skiprows=0, usecols=[4])
+        unique_ref_classes = np.unique(ref_classes)
+        ref_clusters = np.argmax(ref_classes[np.newaxis, :] == unique_ref_classes[:, np.newaxis], axis=0)
+
+    return data, ref_clusters
+
+
 def main():
     print("begining...")
     file_name = "point.data"
+    iris_file_name = "iris.data"
     nbr_restarts = 5
     threshold = 0.001
     K = 3
 
     data, ref_clusters = read_data(file_name)
+
+    # iris 数据集测试，测试时打开注释
+    # data, ref_clusters = read_data_iris(iris_file_name)
     mu_lst = []
     sigma_lst = []
 
