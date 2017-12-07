@@ -1,7 +1,13 @@
 # MLA
 Machine Learning Algorithm
 
-高斯混合模型(GMM)
+## 安装
+安装numpy
+参考：[ python实践系列之（一）安装 python/pip/numpy/matplotlib](http://blog.csdn.net/sinat_28224453/article/details/51462935)
+
+运行 gmm.py
+
+## 高斯混合模型(GMM)
 
 1. 高斯混合模型的定义:高斯混合模型是指具有如下形式的概率分布模型：
 
@@ -30,5 +36,5 @@ P(Y|θ)=∑k=1Kαkϕ(y|θk)
 
 (4)重复(2)和(3)直到收敛。
 
-NMI 实现参考：
-https://smj2284672469.github.io/2017/11/14/NMI-Python/
+## NMI 
+实现参考：https://smj2284672469.github.io/2017/11/14/NMI-Python/
