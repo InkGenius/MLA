@@ -1,0 +1,5 @@
+env/
+.cache/
+tests/.cache/
+*.pyc
+.idea/
