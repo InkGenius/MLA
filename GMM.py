@@ -1,11 +1,9 @@
 import numpy as np
 import random as rd
-from clustering.nmi import compute_cost
-import clustering.hungarian as hg
+from NMI import compute_cost
 
 
 def random_parameters(data, K):
-    """ init the means, covariances and mixing coefs"""
     cols = (data.shape)[1]
 
     mu = np.zeros((K, cols))
@@ -19,16 +17,10 @@ def random_parameters(data, K):
         sigma.append(np.cov(data.T))
 
     pi = np.ones(K) * 1.0 / K
-    # print("初始值")
-    # print("----------------------------------------")
-    # print("pi = ", pi)
-    # print("mu = ", mu)
-    # print("sigma = ", sigma)
     return mu, sigma, pi
 
 
 def _e_step(data, K, mu, sigma, pi):
-    """ evaluate the responsabilities using the current parameters """
     idvs = len(data)
 
     resp = np.zeros((idvs, K))
@@ -53,7 +45,6 @@ def e_step(data, K, mu, sigma, pi):
 
 
 def log_likelihood(data, K, mu, sigma, pi):
-    """ marginal over X """
     log_likelihood = 0.0
     for n in range(len(data)):
         log_likelihood += np.log(likelihood(data[n], K, mu, sigma, pi))
@@ -68,7 +59,6 @@ def likelihood(x, K, mu, sigma, pi):
 
 
 def m_step(data, K, resp):
-    """ find the parameters that maximize the log-likelihood given the current resp."""
     idvs = (data.shape)[0]
     cols = (data.shape)[1]
 
@@ -94,7 +84,6 @@ def m_step(data, K, resp):
 
 
 def gaussian(x, mu, sigma):
-    """ compute the pdf of the multi-var gaussian """
     idvs = len(x)
     norm_factor = (2 * np.pi) ** idvs
 
@@ -108,7 +97,6 @@ def gaussian(x, mu, sigma):
 
 
 def _log_likelihood(data, K, mu, sigma, pi):
-    """ evalutate the (marginal) log-likelihood """
     score = 0.0
     for n in range(len(data)):
         for k in range(K):
@@ -153,26 +141,6 @@ def assign_clusters(K, resp):
     return clusters
 
 
-def compute_statistics(clusters, ref_clusters, K):
-    mat = make_ce_matrix(clusters, ref_clusters, K)
-    hung_solver = hg.Hungarian()
-    rs = hung_solver.compute(mat, False)
-
-    tmp_clusters = np.array(clusters)
-    for old, new in rs:
-        clusters[np.where(tmp_clusters == old)] = new
-        # print old, new
-
-    # print clusters, ref_clusters
-    nbrIts = 0
-    for k in range(K):
-        ref = np.where(ref_clusters == k)[0]
-        clust = np.where(clusters == k)[0]
-        nbrIts += len(np.intersect1d(ref, clust))
-        print(len(np.intersect1d(ref, clust)))
-    return nbrIts
-
-
 def make_ce_matrix(clusters, ref_clusters, K):
     mat = np.zeros((K, K), dtype=int)
     for i in range(K):
@@ -185,36 +153,7 @@ def make_ce_matrix(clusters, ref_clusters, K):
     return mat
 
 
-########################################################################
-def read_data(file_name):
-    """ read the data from filename as numpy array """
-    with open(file_name) as f:
-        data = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=(0, 1))
-
-    with open(file_name) as f:
-        ref_classes = np.loadtxt(f, delimiter=",", dtype="int", skiprows=0, usecols=[2])
-        unique_ref_classes = np.unique(ref_classes)
-        ref_clusters = np.argmax(ref_classes[np.newaxis, :] == unique_ref_classes[:, np.newaxis], axis=0)
-
-    return data, ref_clusters
-
-
-########################################################################
-def read_data_iris(file_name):
-    """ read the data from filename as numpy array """
-    with open(file_name) as f:
-        data = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=(0, 1, 2, 3))
-
-    with open(file_name) as f:
-        ref_classes = np.loadtxt(f, delimiter=",", dtype="str", skiprows=0, usecols=[4])
-        unique_ref_classes = np.unique(ref_classes)
-        ref_clusters = np.argmax(ref_classes[np.newaxis, :] == unique_ref_classes[:, np.newaxis], axis=0)
-
-    return data, ref_clusters
-
-
 def read_data_study(file_name):
-    """ read the data from filename as numpy array """
     with open(file_name) as f:
         data = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=(0, 1, 2, 3, 4))
 
@@ -226,39 +165,16 @@ def read_data_study(file_name):
     return data, ref_clusters
 
 
-def read_data_wholesales(file_name):
-    """ read the data from filename as numpy array """
-    with open(file_name) as f:
-        data = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=(2, 3, 4, 5, 6, 7))
-
-    with open(file_name) as f:
-        ref_classes = np.loadtxt(f, delimiter=",", dtype="float", skiprows=0, usecols=[0])
-        unique_ref_classes = np.unique(ref_classes)
-        ref_clusters = np.argmax(ref_classes[np.newaxis, :] == unique_ref_classes[:, np.newaxis], axis=0)
-
-    return data, ref_clusters
-
 def main():
     print("begining...")
-    file_name = "./dataset/point.data"
-    iris_file_name = "./dataset/iris.data"
-    study_file_name = "./dataset/study.data"
-    wholesale_file_name = "./dataset/wholesale.data"
+    study_file_name = "study.data"
+    # 程序启动4次
     nbr_restarts = 4
+    # 设置收敛阈值为 0.001
     threshold = 0.001
-    K = 3
+    K = 6
 
-    # data, ref_clusters = read_data(file_name)
-
-    # iris 数据集测试，测试时打开注释
-    # data, ref_clusters = read_data_iris(iris_file_name)
-
-    # study 数据集测试，测试时打开注释
     data, ref_clusters = read_data_study(study_file_name)
-
-    # wholesale 数据集测试，测试时打开注释
-    # data, ref_clusters = read_data_wholesales(wholesale_file_name)
-
 
     mu_lst = []
     sigma_lst = []
@@ -269,24 +185,24 @@ def main():
     max_likelihood_score = float("-inf")
     for rst in range(nbr_restarts):
         log_likelihood, mu, sigma, resp, pi = EM(data, rst, K, threshold)
+        clusters = assign_clusters(K, resp)
+        print("最终结果")
+        print("----------------------------------------")
+        print("pi = ", pi)
+        print("mu = ", mu)
+        print("sigma = ", sigma)
+        print("nmi = ", compute_cost(clusters, ref_clusters))
         if log_likelihood > max_likelihood_score:
             max_likelihood_score = log_likelihood
             max_mu, max_sigma, max_resp = mu, sigma, resp
 
     clusters = assign_clusters(K, max_resp)
-    # cost = compute_statistics(clusters, ref_clusters, K)
-    # print clusters
-    # print ref_clusters
-
     print("最终结果")
     print("----------------------------------------")
     print("pi = ", pi)
     print("mu = ", max_mu)
     print("sigma = ", max_sigma)
     print("nmi = ", compute_cost(clusters, ref_clusters))
-
-    # print(cost * 1.0 / len(data))
-
 
 if __name__ == '__main__':
     main()
